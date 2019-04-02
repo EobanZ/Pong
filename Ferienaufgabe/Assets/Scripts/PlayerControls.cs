@@ -3,6 +3,8 @@ using System.Collections;
 
 public class PlayerControls : MonoBehaviour {
 
+    State _state = new defaultState();
+
     float MAX_POWER = 1;
 
     float powerLeft = 0;
@@ -23,6 +25,16 @@ public class PlayerControls : MonoBehaviour {
 	void Update () {
         timer += Time.deltaTime;
 
+        State state = _state.handleInput(gameObject);
+        if(state != _state)
+        {
+            _state.exit();
+            _state = state;
+            _state.enter(gameObject, this);
+        }
+        _state.update(gameObject);
+
+        //Standard Movement
         float movement = Input.GetAxis("Mouse Y");
         this.gameObject.transform.Translate(0, movement, 0, Space.World);
         if(transform.position.y > GameManager.Instance.MAX_Y_MOVEMENT)
@@ -37,11 +49,11 @@ public class PlayerControls : MonoBehaviour {
      
         if(Input.GetMouseButton(0) && timer >= powerupRate)
         {
-            powerRight = 0;
-            powerLeft += 0.1f;
-            powerLeft = powerLeft >= 1 ? 1 : powerLeft;
-            timer = 0;
-            transform.localRotation = Quaternion.Lerp(startRotation, Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 120), powerLeft);
+            //powerRight = 0;
+            //powerLeft += 0.1f;
+            //powerLeft = powerLeft >= 1 ? 1 : powerLeft;
+            //timer = 0;
+            //transform.localRotation = Quaternion.Lerp(startRotation, Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 120), powerLeft);
             //transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, (powerLeft * 30) + 90);
 
         }
@@ -55,12 +67,12 @@ public class PlayerControls : MonoBehaviour {
             //transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, (powerRight * -30) + 90);
         }
         
-        if(!Input.GetMouseButton(0) && !Input.GetMouseButton(1))
-        {
-            powerLeft = 0;
-            powerRight = 0;
-            transform.localRotation = Quaternion.Lerp(transform.localRotation, startRotation, Time.deltaTime * 50f);
-        }
+        //if(!Input.GetMouseButton(0) && !Input.GetMouseButton(1))
+        //{
+        //    powerLeft = 0;
+        //    powerRight = 0;
+        //    transform.localRotation = Quaternion.Lerp(transform.localRotation, startRotation, Time.deltaTime * 50f);
+        //}
             
          
         
