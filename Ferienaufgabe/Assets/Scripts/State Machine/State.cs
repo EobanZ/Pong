@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public interface State
 {
     State handleInput(GameObject go);
@@ -13,7 +14,7 @@ public interface State
 public class defaultState : State 
 {
     Transform transform;
-    Quaternion startRotation = Quaternion.Euler(0, 0, 90);
+    Rigidbody rb;
 
     IEnumerator resetRotationAfterTime()
     {
@@ -23,21 +24,24 @@ public class defaultState : State
 
     void RotateToDefault()
     {
-        transform.localRotation = startRotation;
-        //transform.localRotation = Quaternion.Lerp(transform.localRotation, startRotation, Time.deltaTime * 50f);
+        transform.localRotation = Quaternion.Euler(0, 0, 90);
+        rb.angularDrag = 10000;
+        rb.angularVelocity = Vector3.zero;
+       
     }
 
     public void enter(GameObject go, MonoBehaviour mono)
     {
         transform = go.transform;
+        rb = go.GetComponent<Rigidbody>();
         mono.StartCoroutine(resetRotationAfterTime());
         
-       //Go back to default position after a delay and lerp
     }
 
     public void exit()
     {
-        //nothing
+        rb.angularDrag = 0;
+        Debug.Log("Defautl State Exit");
     }
 
     public void update(GameObject go)
@@ -66,22 +70,30 @@ public class defaultState : State
 
 public class chargingLeftState : State
 {
-    static Quaternion startRotation;
+    Rigidbody rb;
+    GameObject go;
+    Transform transform;
+    float charge = 0;
     public void enter(GameObject go, MonoBehaviour mono)
     {
-        
+        mono.StopAllCoroutines();
+        rb = go.GetComponent<Rigidbody>();
+        rb.angularDrag = 0;
+        this.go = go;
+        transform = go.transform;
     }
 
     public void exit()
     {
-        //Apply rotation force to rigid body
+        rb.angularVelocity = Vector3.zero;
+        rb.AddTorque(-go.transform.forward * charge * 200, ForceMode.Acceleration);
+        Debug.Log("Charging Left State Exit");
     }
 
     public State handleInput(GameObject go)
     {
         if(Input.GetMouseButtonUp(0))
         {
-            exit();
             return new defaultState();
         }
         else
@@ -92,31 +104,52 @@ public class chargingLeftState : State
 
     public void update(GameObject go)
     {
-        Transform transform = go.transform;
-        startRotation = transform.rotation;
-        transform.localRotation = Quaternion.Lerp(startRotation, Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 120), 1);
+        charge += Time.deltaTime;
+        Mathf.Clamp(charge, 0, GameManager.Instance.MAX_CHARGE_POWER);
+        transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 120);
+
     }
 }
 
 public class chargingRightState : State
 {
+    Rigidbody rb;
+    GameObject go;
+    Transform transform;
+    float charge = 0;
+
     public void enter(GameObject go, MonoBehaviour mono)
     {
-        
+        mono.StopAllCoroutines();
+        rb = go.GetComponent<Rigidbody>();
+        rb.drag = 0;
+        this.go = go;
+        transform = go.transform;
     }
 
     public void exit()
     {
-        
+        rb.angularVelocity = Vector3.zero;
+        rb.AddTorque(go.transform.forward * charge * 200, ForceMode.Acceleration);
+        Debug.Log("Chargeing Right Stat eExit");
     }
 
     public State handleInput(GameObject go)
     {
-        return new defaultState();
+        if (Input.GetMouseButtonUp(1))
+        {
+            return new defaultState();
+        }
+        else
+        {
+            return this;
+        }
     }
 
     public void update(GameObject go)
     {
-        
+        charge += Time.deltaTime;
+        Mathf.Clamp(charge, 0, GameManager.Instance.MAX_CHARGE_POWER);
+        transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 60);
     }
 }

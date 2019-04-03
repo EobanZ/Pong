@@ -11,6 +11,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     public bool GameOver { get; set; }
     public int PointsToWin = 3;
     public int PickupsNeededForNewLife = 5;
+    public float MAX_CHARGE_POWER = 300;
 
     [Space]
     [Header("Ball")]
