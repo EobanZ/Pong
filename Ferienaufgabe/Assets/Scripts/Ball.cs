@@ -26,11 +26,6 @@ public class Ball : MonoBehaviour {
         rb.velocity = startingSpeed;
     }
 
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
     void OnCollisionEnter(Collision collision)
     {
@@ -40,9 +35,16 @@ public class Ball : MonoBehaviour {
             //if we collide with a player, we become faster
             rb.velocity *= 1.1f;
             rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
+
             //we also gain a little speed away from his center
             float addSpeed = (this.gameObject.transform.position.x - collision.gameObject.transform.position.x);
             rb.velocity += new Vector3(addSpeed, 0, 0);
+
+
+            if (transform.position.x > 0)
+                GameManager.Instance.LastContact = ePlayerType.ki;
+            else
+                GameManager.Instance.LastContact = ePlayerType.player;         
         }
         
     }
@@ -50,7 +52,7 @@ public class Ball : MonoBehaviour {
     {
         if (other.gameObject.CompareTag("Border"))
         {
-            if (other.gameObject.transform.position.x > 0.0f)
+            if (other.gameObject.transform.position.x < 0.0f)
                 GameManager.Instance.OnBorderCollision(ePlayerType.player);
             else
                 GameManager.Instance.OnBorderCollision(ePlayerType.ki);

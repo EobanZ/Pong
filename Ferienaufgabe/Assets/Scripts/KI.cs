@@ -8,7 +8,8 @@ public class KI : MonoBehaviour
     Vector3 defaultPos;
     float speed;
     Rigidbody rb;
-    // Start is called before the first frame update
+
+
     void Start()
     {
         ball = GameManager.Instance.Ball.transform;
@@ -17,7 +18,6 @@ public class KI : MonoBehaviour
         rb = ball.gameObject.GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (!ball)
@@ -43,7 +43,7 @@ public class KI : MonoBehaviour
         }
         else if(rb.velocity.x <0)
         {
-            Debug.Log(rb.velocity.x);
+
             if(defaultPos.y > transform.position.y)
             {
                 transform.Translate(new Vector3(0, 0.001f * speed * 0.5f, 0), Space.World);

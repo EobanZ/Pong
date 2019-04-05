@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum ePlayerType { player = 1, ki = 2, none};
 
@@ -26,32 +27,44 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     [Space]
     [Header("UI Elements")]
-    public TMPro.TMP_Text PointsPlayer;
-    public TMPro.TMP_Text PointsKi;
-    //Son auflade meter dingens
+    public GameObject LifesPlayer;
+    public GameObject LifesKi;
+    public GameObject ChargeMeter;
     public TMPro.TMP_Text WinnerText;
     public GameObject GameOverPanel;
 
+    public Image[] playerLifes;
+    public RectTransform PlayerChargeMeter { get; set; }
 
-    private int currPointsPlayer = 0;
-    private int currPointsKi = 0;
+    public Image[] kiLifes;
+   
+
+
+    private int currLifesPlayer = 3;
+    private int currLifesKi = 3;
     private ePlayerType winner = ePlayerType.none;
 
     private Vector3 ballInitPos;
+    public ePlayerType LastContact = ePlayerType.none;
     private GameObject instatiatedBall = null;
     public GameObject Ball { get { return instatiatedBall; } }
     
     
-    // Start is called before the first frame update
     void Start()
     {
         Time.timeScale = 1;
         AudioListener.pause = false;
 
+        
+        PlayerChargeMeter = ChargeMeter.GetComponent<RectTransform>();
+        PlayerChargeMeter.localScale = new Vector3(0,1,1);
+      
+
+
         StartRound();
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         if (GameOver)
@@ -62,49 +75,53 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     public void OnBorderCollision(ePlayerType type)
     {
+        DecLife(type);
         switch (type)
         {
-            case ePlayerType.player:
-                AddPointPlayer();
+            case ePlayerType.player:     
                 break;
-            case ePlayerType.ki:
-                AddPointKi();
+            case ePlayerType.ki:                  
                 break;
             default:
                 break;
         }
-        instatiatedBall.GetComponent<Ball>().reset();
-        if (GameOver) ;
-            //Show ui or something
+        
+        if (!GameOver)
+            instatiatedBall.GetComponent<Ball>().reset();
+        //Show ui or something
+    }
+
+    private void DecLife(ePlayerType type)
+    {
+        switch (type)
+        {
+            case ePlayerType.player:
+                currLifesPlayer--;
+                if(currLifesPlayer <= 0)
+                {
+                    winner = ePlayerType.ki;
+                    GameOver = true;
+                }
+                break;
+            case ePlayerType.ki:
+                currLifesKi--;
+                if (currLifesKi <= 0)
+                {
+                    winner = ePlayerType.player;
+                    GameOver = true;
+                }
+                break;
+            case ePlayerType.none:
+                break;
+            default:
+                break;
+        }
+        UpdateUI();
     }
 
     private void OnGameOver()
     {
 
-    }
-
-    private void AddPointPlayer()
-    {
-        currPointsPlayer++;
-        if(currPointsPlayer >= PointsToWin)
-        {
-            winner = ePlayerType.player;
-            GameOver = true;
-            OnGameOver();
-        }
-        Debug.Log("Point for Player");
-    }
-
-    private void AddPointKi()
-    {
-        currPointsKi++;
-        if(currPointsKi >= PointsToWin)
-        {
-            winner = ePlayerType.ki;
-            GameOver = true;
-            OnGameOver();
-        }
-        Debug.Log("Point for KI");
     }
 
     public void StartRound()
@@ -116,14 +133,32 @@ public class GameManager : GenericSingletonClass<GameManager>
     private void Reset()
     {
         winner = ePlayerType.none;
-        currPointsKi = 0;
-        currPointsPlayer = 0;
+        currLifesKi = 0;
+        currLifesPlayer = 0;
         UpdateUI();
+        //Or just reload scene 
+    }
+
+    private void SpawnRandomObsticles()
+    {
+
     }
 
     private void UpdateUI()
     {
+        //Player Hearts
+        int i = 3 - currLifesPlayer;
+        for( int j = 0; j < i; j++)
+        {
+            playerLifes[i-1].color = new Color32(126, 126, 126,255);
+        }
 
+        //KI Hearts
+        i = 3 - currLifesKi;
+        for (int j = 0; j < i; j++)
+        {
+            kiLifes[i - 1].color = new Color32(126, 126, 126, 255);
+        }
     }
 
     

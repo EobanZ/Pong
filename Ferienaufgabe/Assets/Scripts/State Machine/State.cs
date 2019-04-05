@@ -35,7 +35,8 @@ public class defaultState : State
         transform = go.transform;
         rb = go.GetComponent<Rigidbody>();
         mono.StartCoroutine(resetRotationAfterTime());
-        
+        GameManager.Instance.PlayerChargeMeter.localScale = new Vector3(0, 1, 1);
+
     }
 
     public void exit()
@@ -45,7 +46,7 @@ public class defaultState : State
 
     public void update(GameObject go)
     {
-        //nothing
+        
     }
 
     public State handleInput(GameObject go)
@@ -80,6 +81,7 @@ public class chargingLeftState : State
         rb.angularDrag = 0;
         this.go = go;
         transform = go.transform;
+      
     }
 
     public void exit()
@@ -103,8 +105,13 @@ public class chargingLeftState : State
     public void update(GameObject go)
     {
         charge += Time.deltaTime;
-        Mathf.Clamp(charge, 0, GameManager.Instance.MaxChargePower);
+        charge = Mathf.Clamp(charge, 0, GameManager.Instance.MaxChargePower);
         transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 120);
+
+        float percent = charge*200 / GameManager.Instance.MaxChargePower;
+        percent = Mathf.Clamp01(percent);
+        GameManager.Instance.PlayerChargeMeter.localScale = new Vector3(percent, 1, 1);
+
 
     }
 }
@@ -123,6 +130,7 @@ public class chargingRightState : State
         rb.drag = 0;
         this.go = go;
         transform = go.transform;
+        
     }
 
     public void exit()
@@ -148,5 +156,9 @@ public class chargingRightState : State
         charge += Time.deltaTime;
         Mathf.Clamp(charge, 0, GameManager.Instance.MaxChargePower);
         transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 60);
+
+        float percent = charge * 200 / GameManager.Instance.MaxChargePower;
+        percent = Mathf.Clamp01(percent);
+        GameManager.Instance.PlayerChargeMeter.localScale = new Vector3(percent, 1, 1);
     }
 }
