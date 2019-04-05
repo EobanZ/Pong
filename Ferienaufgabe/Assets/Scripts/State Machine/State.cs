@@ -41,7 +41,6 @@ public class defaultState : State
     public void exit()
     {
         rb.angularDrag = 0;
-        Debug.Log("Defautl State Exit");
     }
 
     public void update(GameObject go)
@@ -87,7 +86,6 @@ public class chargingLeftState : State
     {
         rb.angularVelocity = Vector3.zero;
         rb.AddTorque(-go.transform.forward * charge * 200, ForceMode.Acceleration);
-        Debug.Log("Charging Left State Exit");
     }
 
     public State handleInput(GameObject go)
@@ -105,7 +103,7 @@ public class chargingLeftState : State
     public void update(GameObject go)
     {
         charge += Time.deltaTime;
-        Mathf.Clamp(charge, 0, GameManager.Instance.MAX_CHARGE_POWER);
+        Mathf.Clamp(charge, 0, GameManager.Instance.MaxChargePower);
         transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 120);
 
     }
@@ -131,7 +129,6 @@ public class chargingRightState : State
     {
         rb.angularVelocity = Vector3.zero;
         rb.AddTorque(go.transform.forward * charge * 200, ForceMode.Acceleration);
-        Debug.Log("Chargeing Right Stat eExit");
     }
 
     public State handleInput(GameObject go)
@@ -149,7 +146,7 @@ public class chargingRightState : State
     public void update(GameObject go)
     {
         charge += Time.deltaTime;
-        Mathf.Clamp(charge, 0, GameManager.Instance.MAX_CHARGE_POWER);
+        Mathf.Clamp(charge, 0, GameManager.Instance.MaxChargePower);
         transform.localRotation = Quaternion.Euler(transform.localRotation.x, transform.localRotation.y, 60);
     }
 }

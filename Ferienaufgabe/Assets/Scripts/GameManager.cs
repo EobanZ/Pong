@@ -7,11 +7,13 @@ public enum ePlayerType { player = 1, ki = 2, none};
 public class GameManager : GenericSingletonClass<GameManager>
 {
     [Header("Game Values")]
-    public float MAX_Y_MOVEMENT = 7.8f;
+    public float MaxYMovement = 7.8f;
     public bool GameOver { get; set; }
     public int PointsToWin = 3;
     public int PickupsNeededForNewLife = 5;
-    public float MAX_CHARGE_POWER = 300;
+    public float KiSpeed = 50;
+    public float MaxChargePower = 300;
+    public float MaxBallSpeed = 10;
 
     [Space]
     [Header("Ball")]
@@ -35,14 +37,27 @@ public class GameManager : GenericSingletonClass<GameManager>
     private int currPointsKi = 0;
     private ePlayerType winner = ePlayerType.none;
 
+    private Vector3 ballInitPos;
     private GameObject instatiatedBall = null;
+    public GameObject Ball { get { return instatiatedBall; } }
     
-
-    private void Awake()
+    
+    // Start is called before the first frame update
+    void Start()
     {
         Time.timeScale = 1;
         AudioListener.pause = false;
-        //Reset
+
+        StartRound();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (GameOver)
+        {
+            //Show Game Over UI
+        }
     }
 
     public void OnBorderCollision(ePlayerType type)
@@ -58,9 +73,14 @@ public class GameManager : GenericSingletonClass<GameManager>
             default:
                 break;
         }
-        Destroy(instatiatedBall);
-        if (!GameOver)
-            instatiatedBall = Instantiate(ballPrefab);
+        instatiatedBall.GetComponent<Ball>().reset();
+        if (GameOver) ;
+            //Show ui or something
+    }
+
+    private void OnGameOver()
+    {
+
     }
 
     private void AddPointPlayer()
@@ -70,6 +90,7 @@ public class GameManager : GenericSingletonClass<GameManager>
         {
             winner = ePlayerType.player;
             GameOver = true;
+            OnGameOver();
         }
         Debug.Log("Point for Player");
     }
@@ -81,6 +102,7 @@ public class GameManager : GenericSingletonClass<GameManager>
         {
             winner = ePlayerType.ki;
             GameOver = true;
+            OnGameOver();
         }
         Debug.Log("Point for KI");
     }
@@ -88,6 +110,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     public void StartRound()
     {
         instatiatedBall = Instantiate(ballPrefab);
+        ballInitPos = instatiatedBall.transform.position;
     }
 
     private void Reset()
@@ -103,18 +126,5 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        StartRound();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(GameOver)
-        {
-            //Show Game Over UI
-        }
-    }
+    
 }

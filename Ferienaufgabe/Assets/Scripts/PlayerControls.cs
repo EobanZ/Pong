@@ -28,13 +28,13 @@ public class PlayerControls : MonoBehaviour {
         //Standard Movement
         float movement = Input.GetAxis("Mouse Y");
         this.gameObject.transform.Translate(0, movement, 0, Space.World);
-        if(transform.position.y > GameManager.Instance.MAX_Y_MOVEMENT)
+        if(transform.position.y > GameManager.Instance.MaxYMovement)
         {
-            transform.position = new Vector3(transform.position.x, GameManager.Instance.MAX_Y_MOVEMENT, transform.position.z);
+            transform.position = new Vector3(transform.position.x, GameManager.Instance.MaxYMovement, transform.position.z);
         }
-        if(transform.position.y < -GameManager.Instance.MAX_Y_MOVEMENT)
+        if(transform.position.y < -GameManager.Instance.MaxYMovement)
         {
-            transform.position = new Vector3(transform.position.x, -GameManager.Instance.MAX_Y_MOVEMENT, transform.position.z);
+            transform.position = new Vector3(transform.position.x, -GameManager.Instance.MaxYMovement, transform.position.z);
         }
 
     }

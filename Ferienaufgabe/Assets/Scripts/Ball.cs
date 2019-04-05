@@ -7,10 +7,12 @@ public class Ball : MonoBehaviour {
     Vector3 startingPosition = Vector3.zero;
     Vector3 startingSpeed = new Vector3(8f,0f,0f);
     Rigidbody rb;
+    float maxSpeed;
 
 	// Use this for initialization
 	void Start () {
         rb = GetComponent<Rigidbody>();
+        maxSpeed = GameManager.Instance.MaxBallSpeed;
         reset();
     }
 
@@ -37,6 +39,7 @@ public class Ball : MonoBehaviour {
         {
             //if we collide with a player, we become faster
             rb.velocity *= 1.1f;
+            rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
             //we also gain a little speed away from his center
             float addSpeed = (this.gameObject.transform.position.x - collision.gameObject.transform.position.x);
             rb.velocity += new Vector3(addSpeed, 0, 0);
