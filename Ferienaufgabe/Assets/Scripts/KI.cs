@@ -20,9 +20,16 @@ public class KI : MonoBehaviour
 
     void Update()
     {
-        if (!ball)
+
+        if (!ball || !GameManager.Instance.gameStarted)
+        {        
             return;
+        }
+            
         Move();
+        ClampMovement();
+
+       
     }
 
     void Move()
@@ -57,5 +64,17 @@ public class KI : MonoBehaviour
         }
 
         
+    }
+
+    void ClampMovement()
+    {
+        if (transform.position.y > GameManager.Instance.MaxYMovement)
+        {
+            transform.position = new Vector3(transform.position.x, GameManager.Instance.MaxYMovement, transform.position.z);
+        }
+        if (transform.position.y < -GameManager.Instance.MaxYMovement)
+        {
+            transform.position = new Vector3(transform.position.x, -GameManager.Instance.MaxYMovement, transform.position.z);
+        }
     }
 }

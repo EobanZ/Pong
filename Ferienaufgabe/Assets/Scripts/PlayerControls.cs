@@ -16,6 +16,9 @@ public class PlayerControls : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+        if (!GameManager.Instance.gameStarted)
+            return;
+
         State state = _state.handleInput(gameObject);
         if(state != _state)
         {

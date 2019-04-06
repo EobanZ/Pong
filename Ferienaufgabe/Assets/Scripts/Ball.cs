@@ -5,7 +5,7 @@ using System.Collections;
 public class Ball : MonoBehaviour {
 
     Vector3 startingPosition = Vector3.zero;
-    Vector3 startingSpeed = new Vector3(8f,0f,0f);
+    Vector3 startingSpeed;
     Rigidbody rb;
     float maxSpeed;
 
@@ -13,6 +13,7 @@ public class Ball : MonoBehaviour {
 	void Start () {
         rb = GetComponent<Rigidbody>();
         maxSpeed = GameManager.Instance.MaxBallSpeed;
+        startingSpeed = new Vector3(GameManager.Instance.BallStartSpeed, 0 , 0f);
         reset();
     }
 
@@ -26,11 +27,28 @@ public class Ball : MonoBehaviour {
         rb.velocity = startingSpeed;
     }
 
+    private void Update()
+    {
+        if (Mathf.Abs(rb.velocity.x) < 7.0f)
+        {
+            if(rb.velocity.x <= 0)
+            {
+                rb.AddForce(new Vector3(2, 0, 0), ForceMode.Impulse);
+            }
+            else if(rb.velocity.x >0)
+            {
+                rb.AddForce(new Vector3(2, 0, 0), ForceMode.Impulse);
+            }
+        }
+
+
+    }
+
 
     void OnCollisionEnter(Collision collision)
     {
-        
-        if (collision.gameObject.CompareTag("Player"))
+        bool isPlayer;
+        if (isPlayer = collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Obsticle"))
         {
             //if we collide with a player, we become faster
             rb.velocity *= 1.1f;
@@ -40,6 +58,8 @@ public class Ball : MonoBehaviour {
             float addSpeed = (this.gameObject.transform.position.x - collision.gameObject.transform.position.x);
             rb.velocity += new Vector3(addSpeed, 0, 0);
 
+            if (!isPlayer)
+                return;
 
             if (transform.position.x > 0)
                 GameManager.Instance.LastContact = ePlayerType.ki;

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.Rendering.PostProcessing;
 
 public enum ePlayerType { player = 1, ki = 2, none};
 
@@ -15,10 +17,23 @@ public class GameManager : GenericSingletonClass<GameManager>
     public float KiSpeed = 50;
     public float MaxChargePower = 300;
     public float MaxBallSpeed = 10;
+    public float BallStartSpeed = 12;
+    public float SpawnBoundaryY;
+    public float SpawnBoundaryX;
+    public float maxObsticleLenght;
+    public float minObsticleLenght;
+    public float maxDistortion1;
+    public float maxDistortion2;
 
     [Space]
-    [Header("Ball")]
+    [Header("Camera")]
+    public GameObject Camera;
+    private PostProcessProfile postP;
+
+    [Space]
+    [Header("Prefabs")]
     public GameObject ballPrefab;
+    public GameObject obstaclePrefab;
 
     [Space]
     [Header("Colectables")]
@@ -32,17 +47,21 @@ public class GameManager : GenericSingletonClass<GameManager>
     public GameObject ChargeMeter;
     public TMPro.TMP_Text WinnerText;
     public GameObject GameOverPanel;
+    public GameObject StartPanel;
+    public GameObject IngamePanel;
 
     public Image[] playerLifes;
     public RectTransform PlayerChargeMeter { get; set; }
 
     public Image[] kiLifes;
-   
 
+
+    public bool gameStarted = false;
 
     private int currLifesPlayer = 3;
     private int currLifesKi = 3;
     private ePlayerType winner = ePlayerType.none;
+    
 
     private Vector3 ballInitPos;
     public ePlayerType LastContact = ePlayerType.none;
@@ -56,22 +75,39 @@ public class GameManager : GenericSingletonClass<GameManager>
         AudioListener.pause = false;
 
         
+        
         PlayerChargeMeter = ChargeMeter.GetComponent<RectTransform>();
         PlayerChargeMeter.localScale = new Vector3(0,1,1);
+
+        IngamePanel.SetActive(false);
+        GameOverPanel.SetActive(false);
+
+        instatiatedBall = Instantiate(ballPrefab);
+        
+        
+
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Time.timeScale = 0;
+            GameOverPanel.SetActive(true);
+            WinnerText.SetText("");
+        }
+
+        
+    }
+
+    IEnumerator StartLenseDistortion()
+    {
+
+        yield return new WaitForSeconds(Random.Range(5, 15));
       
 
-
-        StartRound();
     }
 
-
-    void Update()
-    {
-        if (GameOver)
-        {
-            //Show Game Over UI
-        }
-    }
 
     public void OnBorderCollision(ePlayerType type)
     {
@@ -87,7 +123,12 @@ public class GameManager : GenericSingletonClass<GameManager>
         }
         
         if (!GameOver)
+        {
             instatiatedBall.GetComponent<Ball>().reset();
+            StopAllCoroutines();
+            StartCoroutine(SpawnRandomObsticles());
+        }
+            
         //Show ui or something
     }
 
@@ -101,6 +142,7 @@ public class GameManager : GenericSingletonClass<GameManager>
                 {
                     winner = ePlayerType.ki;
                     GameOver = true;
+                    OnGameOver();
                 }
                 break;
             case ePlayerType.ki:
@@ -109,6 +151,7 @@ public class GameManager : GenericSingletonClass<GameManager>
                 {
                     winner = ePlayerType.player;
                     GameOver = true;
+                    OnGameOver();
                 }
                 break;
             case ePlayerType.none:
@@ -121,27 +164,118 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     private void OnGameOver()
     {
+        Time.timeScale = 0;
+        GameOverPanel.SetActive(true);
+        switch (winner)
+        {
+            case ePlayerType.player:
+                WinnerText.SetText("YOU WON!");
+                break;
+            case ePlayerType.ki:
+                WinnerText.SetText("YOU LOST..");
+                break;
+            case ePlayerType.none:
+                break;
+            default:
+                break;
+        }
 
+        Cursor.visible = true;
+    }
+
+    private void OnApplicationPause(bool pause)
+    {
+        StopAllCoroutines();
+    }
+
+    private void OnApplicationQuit()
+    {
+        StopAllCoroutines();
     }
 
     public void StartRound()
     {
-        instatiatedBall = Instantiate(ballPrefab);
+
+        Cursor.visible = false;
+        instatiatedBall.GetComponent<Ball>().reset();
         ballInitPos = instatiatedBall.transform.position;
+        StartCoroutine(SpawnRandomObsticles());
+        IngamePanel.SetActive(true);
+        StartPanel.SetActive(false);
+        gameStarted = true;
     }
 
-    private void Reset()
+    public void Reset()
     {
-        winner = ePlayerType.none;
-        currLifesKi = 0;
-        currLifesPlayer = 0;
-        UpdateUI();
+        //winner = ePlayerType.none;
+        //currLifesKi = 0;
+        //currLifesPlayer = 0;
+        //UpdateUI();
+        //StopAllCoroutines();
         //Or just reload scene 
+        SceneManager.LoadScene(0);
     }
 
-    private void SpawnRandomObsticles()
-    {
+   
 
+    IEnumerator SpawnRandomObsticles()
+    {
+        //Spawn standard obsticle:
+        yield return new WaitForSeconds(3);
+        Quaternion randRotation;
+        int i = Random.Range(0, 1);
+        if(i == 0)
+        {
+            randRotation = Quaternion.Euler(0, 0, Random.Range(-10, -8));
+        }
+        else
+        {
+            randRotation = Quaternion.Euler(0, 0, Random.Range(8, 10));
+        }
+     
+
+        GameObject tmpGO = Instantiate(obstaclePrefab, Vector3.zero, randRotation);
+        tmpGO.transform.localScale = new Vector3(Random.Range(minObsticleLenght, maxObsticleLenght), Random.Range(minObsticleLenght, maxObsticleLenght), 1);
+        Destroy(tmpGO, 4);
+
+        while(true)
+        {
+            float randomDelay = Random.Range(3, 12);
+            yield return new WaitForSeconds(randomDelay);
+            SpawnObsticle();
+            
+        }
+
+        yield return null;
+    }
+
+    Vector3 ChooseSpawnLocation()
+    {
+        bool isValidPosition = false;
+        int tries = 0;
+
+        Vector3 pos = new Vector3(Random.Range(-SpawnBoundaryX, SpawnBoundaryX), Random.Range(-SpawnBoundaryY, SpawnBoundaryY), 0);
+        while(!isValidPosition)
+        {
+            tries++;
+            Collider[] colliders = Physics.OverlapSphere(pos, 1f);
+            if (colliders.Length == 0)
+                isValidPosition = true;
+            if(tries > 20)
+            {
+                return Vector3.zero;
+            }
+        }
+
+
+        return pos;
+    }
+
+    void SpawnObsticle()
+    {
+        Vector3 spawnPos = ChooseSpawnLocation();
+        GameObject go = Instantiate(obstaclePrefab, spawnPos, Quaternion.Euler(0, 0, Random.Range(-10, 10)));
+        Destroy(go, 3);
     }
 
     private void UpdateUI()
@@ -159,6 +293,12 @@ public class GameManager : GenericSingletonClass<GameManager>
         {
             kiLifes[i - 1].color = new Color32(126, 126, 126, 255);
         }
+    }
+
+    public void Quit()
+    {
+        StopAllCoroutines();
+        Application.Quit();
     }
 
     
