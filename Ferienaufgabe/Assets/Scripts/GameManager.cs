@@ -24,6 +24,8 @@ public class GameManager : GenericSingletonClass<GameManager>
     public float minObsticleLenght;
     public float maxDistortion1;
     public float maxDistortion2;
+    public float minDelay;
+    public float maxDelay;
 
     [Space]
     [Header("Camera")]
@@ -35,10 +37,6 @@ public class GameManager : GenericSingletonClass<GameManager>
     public GameObject ballPrefab;
     public GameObject obstaclePrefab;
 
-    [Space]
-    [Header("Colectables")]
-    public GameObject item1Prefab;
-    public GameObject item2Prefab;
 
     [Space]
     [Header("UI Elements")]
@@ -54,6 +52,8 @@ public class GameManager : GenericSingletonClass<GameManager>
     public RectTransform PlayerChargeMeter { get; set; }
 
     public Image[] kiLifes;
+
+    public Canvas canvas;
 
 
     public bool gameStarted = false;
@@ -95,17 +95,11 @@ public class GameManager : GenericSingletonClass<GameManager>
             Time.timeScale = 0;
             GameOverPanel.SetActive(true);
             WinnerText.SetText("");
+            GameOver = true;
+            OnGameOver();
         }
 
         
-    }
-
-    IEnumerator StartLenseDistortion()
-    {
-
-        yield return new WaitForSeconds(Random.Range(5, 15));
-      
-
     }
 
 
@@ -197,6 +191,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     {
 
         Cursor.visible = false;
+        canvas.GetComponent<Canvas>().planeDistance = 1;
         instatiatedBall.GetComponent<Ball>().reset();
         ballInitPos = instatiatedBall.transform.position;
         StartCoroutine(SpawnRandomObsticles());
@@ -240,7 +235,7 @@ public class GameManager : GenericSingletonClass<GameManager>
 
         while(true)
         {
-            float randomDelay = Random.Range(3, 12);
+            float randomDelay = Random.Range(minDelay, maxDelay);
             yield return new WaitForSeconds(randomDelay);
             SpawnObsticle();
             

@@ -9,12 +9,17 @@ public class Ball : MonoBehaviour {
     Rigidbody rb;
     float maxSpeed;
 
+    AudioSource audioSource;
+    public AudioClip[] contactClips;
+    public AudioClip[] pointClips;
+
 	// Use this for initialization
 	void Start () {
         rb = GetComponent<Rigidbody>();
         maxSpeed = GameManager.Instance.MaxBallSpeed;
         startingSpeed = new Vector3(GameManager.Instance.BallStartSpeed, 0 , 0f);
         reset();
+        audioSource = GetComponent<AudioSource>();
     }
 
     public void reset() {
@@ -47,6 +52,7 @@ public class Ball : MonoBehaviour {
 
     void OnCollisionEnter(Collision collision)
     {
+
         bool isPlayer;
         if (isPlayer = collision.gameObject.CompareTag("Player") || collision.gameObject.CompareTag("Obsticle"))
         {
@@ -66,6 +72,10 @@ public class Ball : MonoBehaviour {
             else
                 GameManager.Instance.LastContact = ePlayerType.player;         
         }
+
+        //Sound
+        audioSource.PlayOneShot(contactClips[Random.Range(0, contactClips.Length)]);
+
         
     }
     void OnTriggerEnter(Collider other)
@@ -73,9 +83,24 @@ public class Ball : MonoBehaviour {
         if (other.gameObject.CompareTag("Border"))
         {
             if (other.gameObject.transform.position.x < 0.0f)
+            {
                 GameManager.Instance.OnBorderCollision(ePlayerType.player);
+                audioSource.PlayOneShot(pointClips[1]);
+            }
             else
+            {
                 GameManager.Instance.OnBorderCollision(ePlayerType.ki);
+                audioSource.PlayOneShot(pointClips[0]);
+            }
+                
         }
+        else
+        {
+            //Sound
+            audioSource.PlayOneShot(contactClips[Random.Range(0, contactClips.Length)]);
+        }
+            
+
+        
     }
 }
