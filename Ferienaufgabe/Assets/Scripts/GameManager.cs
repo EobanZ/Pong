@@ -248,15 +248,14 @@ public class GameManager : GenericSingletonClass<GameManager>
     {
         bool isValidPosition = false;
         int tries = 0;
-
         Vector3 pos = new Vector3(Random.Range(-SpawnBoundaryX, SpawnBoundaryX), Random.Range(-SpawnBoundaryY, SpawnBoundaryY), 0);
         while(!isValidPosition)
         {
             tries++;
-            Collider[] colliders = Physics.OverlapSphere(pos, 1f);
+            Collider[] colliders = Physics.OverlapSphere(pos, 1);
             if (colliders.Length == 0)
                 isValidPosition = true;
-            if(tries > 20)
+            if(tries > 100)
             {
                 return Vector3.zero;
             }
@@ -268,9 +267,12 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     void SpawnObsticle()
     {
+
         Vector3 spawnPos = ChooseSpawnLocation();
-        GameObject go = Instantiate(obstaclePrefab, spawnPos, Quaternion.Euler(0, 0, Random.Range(-10, 10)));
-        Destroy(go, 3);
+        GameObject go = Instantiate(obstaclePrefab, spawnPos, Quaternion.Euler(0, 0, Random.Range(-20, 20)));
+        go.transform.localScale = new Vector3(Random.Range(0.5f, 2) , Random.Range(minObsticleLenght, maxObsticleLenght), 1);
+
+        Destroy(go, Random.Range(3, 10));
     }
 
     private void UpdateUI()
