@@ -12,8 +12,6 @@ public class GameManager : GenericSingletonClass<GameManager>
     [Header("Game Values")]
     public float MaxYMovement = 7.8f;
     public bool GameOver { get; set; }
-    public int PointsToWin = 3;
-    public int PickupsNeededForNewLife = 5;
     public float KiSpeed = 50;
     public float MaxChargePower = 300;
     public float MaxBallSpeed = 10;
@@ -26,6 +24,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     public float maxDistortion2;
     public float minDelay;
     public float maxDelay;
+    public int maxObsticalesOnField;
 
     [Space]
     [Header("Camera")]
@@ -122,8 +121,13 @@ public class GameManager : GenericSingletonClass<GameManager>
             StopAllCoroutines();
             StartCoroutine(SpawnRandomObsticles());
         }
-            
-        //Show ui or something
+
+        GameObject[] gos = GameObject.FindGameObjectsWithTag("Obsticle");
+        foreach (var item in gos)
+        {
+            Destroy(item);
+        }
+       
     }
 
     private void DecLife(ePlayerType type)
@@ -202,12 +206,7 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     public void Reset()
     {
-        //winner = ePlayerType.none;
-        //currLifesKi = 0;
-        //currLifesPlayer = 0;
-        //UpdateUI();
-        //StopAllCoroutines();
-        //Or just reload scene 
+       
         SceneManager.LoadScene(0);
     }
 
@@ -218,12 +217,12 @@ public class GameManager : GenericSingletonClass<GameManager>
         //Spawn standard obsticle:
         yield return new WaitForSeconds(3);
         Quaternion randRotation;
-        int i = Random.Range(0, 1);
+        int i = Random.Range(0, 2);
         if(i == 0)
         {
             randRotation = Quaternion.Euler(0, 0, Random.Range(-10, -8));
         }
-        else
+        else 
         {
             randRotation = Quaternion.Euler(0, 0, Random.Range(8, 10));
         }
@@ -235,6 +234,14 @@ public class GameManager : GenericSingletonClass<GameManager>
 
         while(true)
         {
+
+            GameObject[] tmp = GameObject.FindGameObjectsWithTag("Obsticle");
+            if (tmp.Length >= maxObsticalesOnField)
+            {
+                yield return new WaitForSeconds(1.0f);
+                continue;
+            }
+
             float randomDelay = Random.Range(minDelay, maxDelay);
             yield return new WaitForSeconds(randomDelay);
             SpawnObsticle();
@@ -255,7 +262,7 @@ public class GameManager : GenericSingletonClass<GameManager>
             Collider[] colliders = Physics.OverlapSphere(pos, 1);
             if (colliders.Length == 0)
                 isValidPosition = true;
-            if(tries > 100)
+            if(tries > 200)
             {
                 return Vector3.zero;
             }
@@ -271,7 +278,6 @@ public class GameManager : GenericSingletonClass<GameManager>
         Vector3 spawnPos = ChooseSpawnLocation();
         GameObject go = Instantiate(obstaclePrefab, spawnPos, Quaternion.Euler(0, 0, Random.Range(-20, 20)));
         go.transform.localScale = new Vector3(Random.Range(0.5f, 2) , Random.Range(minObsticleLenght, maxObsticleLenght), 1);
-
         Destroy(go, Random.Range(3, 10));
     }
 
